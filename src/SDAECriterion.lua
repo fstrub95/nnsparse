@@ -156,8 +156,6 @@ function SDAECriterion:updateGradInput(estimate, target, index)
 
 end
 
-function SDAECriterion:__len() return 0 end
-
 function SDAECriterion:__tostring__()
    return torch.type(self) .. " alpha: ".. self.alpha .. ", beta: " ..self.beta .. ",noiseRatio: " .. self.noiseRatio .. " ,flipRatio: " .. self.flipRatio .. ", hideratio:" .. self.hideRatio
 end
