@@ -1,16 +1,7 @@
+--enable to use prepreInput with standard criterion
 function nn.Criterion:prepareInput(input)
    return input
 end
-function nn.Criterion:training()
-   self.train = true
-end
-
-
-function nn.Criterion:evaluate()
-   self.train = false
-end
-
-
 
 local SDAECriterion, parent = torch.class('nn.SDAECriterion', 'nn.Criterion')
 
