@@ -130,9 +130,41 @@ end
 
 
 
-function SDAECriterionTester.NoNoise()
 
+function SDAECriterionTester.NoNoiseSingleSample()
+
+   local input  = torch.ones(100)
+   local output = torch.Tensor(100):uniform()
    
+   local beta = 0.5
+   
+   local basicCriterion = nn.MSECriterion()
+   local sdaeCriterion = nn.SDAECriterion(nn.MSECriterion(), 
+   {
+      alpha = 1,
+      beta =  beta,
+      hideRatio  = 0,
+      noiseRatio = 0,
+      flipRatio  = 0,
+   })
+   
+   local noisyInput = sdaeCriterion:prepareInput(input)
+   
+   local expectedLoss = basicCriterion:forward(output, input     )
+   local obtainedLoss = sdaeCriterion:forward (output, noisyInput)
+
+   tester:assertalmosteq(expectedLoss*beta, obtainedLoss, 1e-6, 'Fail to compute SDAE loss with no noise and single sample')
+
+   local expectedDLoss = basicCriterion:backward(output, input     )
+   local obtainedDLoss = sdaeCriterion:backward (output, noisyInput)
+   
+   tester:assertTensorEq(expectedDLoss:mul(beta), obtainedDLoss, 1e-6, 'Fail to compute SDAE Dloss with no noise and single sample')
+
+end
+
+
+
+function SDAECriterionTester.NoNoise()
 
    local input  = torch.ones(10, 100)
    local output = torch.Tensor(10, 100):uniform()
@@ -154,14 +186,53 @@ function SDAECriterionTester.NoNoise()
    local expectedLoss = basicCriterion:forward(output, input     )
    local obtainedLoss = sdaeCriterion:forward (output, noisyInput)
 
-   tester:asserteq(expectedLoss*beta, obtainedLoss, 'Fail to compute SDAE loss with no noise')
+   tester:assertalmosteq(expectedLoss*beta, obtainedLoss, 1e-6, 'Fail to compute SDAE loss with no noise')
 
    local expectedDLoss = basicCriterion:backward(output, input     )
    local obtainedDLoss = sdaeCriterion:backward (output, noisyInput)
    
-   tester:assertTensorEq(expectedDLoss:mul(beta), obtainedDLoss, 0, 'Fail to compute SDAE Dloss with no noise')
+   tester:assertTensorEq(expectedDLoss:mul(beta), obtainedDLoss, 1e-6, 'Fail to compute SDAE Dloss with no noise')
 
 end
+
+
+function SDAECriterionTester.NoNoiseSizeAverage()
+
+   local input  = torch.ones(10, 100)
+   local output = torch.Tensor(10, 100):uniform()
+   
+   local beta = 0.5
+   
+   local basicCriterion = nn.MSECriterion()
+   basicCriterion.sizeAverage = false
+   
+   local sdaeCriterion = nn.SDAECriterion(nn.MSECriterion(), 
+   {
+      alpha = 1,
+      beta =  beta,
+      hideRatio  = 0,
+      noiseRatio = 0,
+      flipRatio  = 0,
+   })
+   sdaeCriterion.sizeAverage = false
+   
+   
+   local noisyInput = sdaeCriterion:prepareInput(input)
+   
+   local expectedLoss = basicCriterion:forward(output, input     )
+   local obtainedLoss = sdaeCriterion:forward (output, noisyInput)
+
+   tester:assertalmosteq(expectedLoss*beta, obtainedLoss, 1e-6,'Fail to compute SDAE loss with no noise')
+
+   local expectedDLoss = basicCriterion:backward(output, input     )
+   local obtainedDLoss = sdaeCriterion:backward (output, noisyInput)
+   
+   tester:assertTensorEq(expectedDLoss:mul(beta), obtainedDLoss, 1e-6, 'Fail to compute SDAE Dloss with no noise')
+
+end
+
+
+
 
 
 function SDAECriterionTester.WithNoise()
@@ -205,7 +276,6 @@ function SDAECriterionTester.WithNoise()
   
   tester:assertalmosteq(expectedDLossSum, obtainedDLossSum, 1e-6, 'Fail to compute SDAE Dloss with noise')
   
-
 end
 
 
