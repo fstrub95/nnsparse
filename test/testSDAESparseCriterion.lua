@@ -1,8 +1,7 @@
 require("nn")
 
-
-dofile("SDAESparseCriterion.lua")
 dofile("SDAECriterion.lua")
+dofile("SDAESparseCriterion.lua")
 dofile("SparseTools.lua")
 
 local sparsifier = function(x) if torch.uniform() < 0.6 then return 0 else return x end end
@@ -136,6 +135,7 @@ function SDAESparseCriterionTester.prepareMixture()
 end
 
 
+
 function SDAESparseCriterionTester.NoNoise()
 
 
@@ -169,43 +169,10 @@ function SDAESparseCriterionTester.NoNoise()
    tester:assertTensorEq(obtainedDLoss, expectedDLoss:mul(beta), 1e-6, 'Fail to compute sparse SDAE Dloss with no noise')
 
 end
-
-
-function SDAESparseCriterionTester.NoNoiseSingleSample()
-
-   local input       = torch.ones(100)
-   local sparseInput = input:sparsify() 
-
-
-   local beta = 0.5
-   
-   local basicCriterion = nn.MSECriterion()
-   local sdaeCriterion  = nn.SDAESparseCriterion(nn.MSECriterion(), 
-   {
-      alpha = 1,
-      beta =  beta,
-      hideRatio  = 0,
-      noiseRatio = 0,
-      flipRatio  = 0,
-   })
-   
-   local noisyInput  = sdaeCriterion:prepareInput(sparseInput)
-   
-   local output = torch.Tensor(10, 100):uniform()
-   
-   local expectedLoss = basicCriterion:forward(output, input     )
-   local obtainedLoss = sdaeCriterion:forward (output, noisyInput)
-
-   tester:assertalmosteq(obtainedLoss, expectedLoss*beta, 1e-6, 'Fail to compute sparse SDAE loss with no noise and a single sample')
-
-   local expectedDLoss = basicCriterion:backward(output, input     )
-   local obtainedDLoss = sdaeCriterion:backward (output, noisyInput)
-   
-   tester:assertTensorEq(obtainedDLoss, expectedDLoss:mul(beta), 1e-6, 'Fail to compute sparse SDAE Dloss with no noise and a single samples')
-
-end
-
-
+--
+--
+--
+--
 function SDAESparseCriterionTester.NoNoiseSizeAverage()
 
    local beta = 0.5
@@ -243,21 +210,75 @@ function SDAESparseCriterionTester.NoNoiseSizeAverage()
 end
 
 
+function SDAESparseCriterionTester.NoNoiseSizeAverageWithReducedSize()
+
+   local beta = 0.5
+   
+   local basicCriterion = nn.MSECriterion()
+   local sdaeCriterion  = nn.SDAESparseCriterion(nn.MSECriterion(), 
+   {
+      alpha = 1,
+      beta =  beta,
+      hideRatio  = 0,
+      noiseRatio = 0,
+      flipRatio  = 0,
+   })
+   
+   basicCriterion.sizeAverage = false
+   sdaeCriterion.sizeAverage  = false
+   
+   sdaeCriterion.sizeAverage2 = true
+   
+   local input       = torch.ones(10, 100)
+   local sparseInput = input:sparsify() 
+   local noisyInput  = sdaeCriterion:prepareInput(sparseInput)
+
+   local output = torch.Tensor(10, 100):uniform()
+   
+   
+   local expectedLoss = 0
+   for i = 1, input:size(1) do
+      local mask = input[i]:ne(0)
+      expectedLoss = expectedLoss + basicCriterion:forward(output[i][mask], input[i][mask]) / mask:size(1)
+   end
+   expectedLoss = expectedLoss * beta
+   
+   local obtainedLoss = sdaeCriterion:forward(output, noisyInput)
+   
+
+   tester:assertalmosteq(obtainedLoss, expectedLoss, 1e-6, 'Fail to compute sparse SDAE loss with no noise')
+
+
+   local expectedDLossSum = 0
+   for i = 1, input:size(1) do
+      local mask = input[i]:ne(0)
+      local curDLoss = basicCriterion:backward(output[i][mask], input[i][mask])
+      expectedDLossSum = expectedDLossSum + beta*(curDLoss:sum() / mask:size(1))
+   end
+   expectedDLossSum = expectedDLossSum * beta
+   
+   local obtainedDLossSum = sdaeCriterion:backward(output, noisyInput):sum()
+   
+   tester:assertalmosteq(obtainedDLossSum, obtainedDLossSum, 1e-6, 'Fail to compute sparse SDAE Dloss with no noise')
+
+
+end
+
+
 function SDAESparseCriterionTester.WithNoise()
 
    local input       = torch.Tensor(10, 100):uniform():apply(sparsifier)
-   
+   local output      = torch.Tensor(10, 100):uniform()
    
    local sparseInput = input:sparsify()
    local sparseMask  = input:ne(0)
-   local output      = torch.Tensor(10, 100):uniform()
-   
-   local alpha = 0.8
-   local beta  = 0.3
+
+   local alpha = 0
+   local beta  = 1
    
   local criterion = nn.SDAESparseCriterion(nn.MSECriterion(), 
   {
-      hideRatio = 0.3,
+      hideRatio = 0.0,
       alpha = alpha,
       beta =  beta,
   })

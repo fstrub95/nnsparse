@@ -19,25 +19,25 @@ function sparseCriterionTester.oneSample()
    local sparseInput = input:sparsify()
    
    -- compute the objective with dense vector
+   local maskDense  = input:ne(0)
    local maskSparse = input:eq(0)
-   output[maskSparse] = input[maskSparse] --artificially create a zero loss for sparseInput
-   
+
    
    local mseFct       = nn.MSECriterion()
    local sparseMseFct = nn.SparseCriterion(nn.MSECriterion())
    
    
-   local expectedLoss  = mseFct      :forward(output , input      ) --we need to mult
-   local obtainedLoss  = sparseMseFct:forward(output , sparseInput) --autoencoder loss
+   local expectedLoss  = mseFct      :forward(output[maskDense], input[maskDense]) --we need to mult
+   local obtainedLoss  = sparseMseFct:forward(output           , sparseInput) --autoencoder loss
       
    tester:assertalmosteq(expectedLoss , obtainedLoss, 1e-6, 'Fail to compute autoencoder sparse loss given a single sample')
    
    
    --autoencoder loss
-   local expectedDLoss = mseFct      :backward(output, input) --autoencoder loss
-   local obtainedDLoss = sparseMseFct:backward(output, sparseInput) 
+   local expectedDLoss = mseFct      :backward(output[maskDense], input[maskDense]) --autoencoder loss
+   local obtainedDLoss = sparseMseFct:backward(output          , sparseInput) 
    
-   tester:assertTensorEq(expectedDLoss, obtainedDLoss, 1e-6, 'Fail to compute autoencoder sparse Dloss given a single sample')
+   tester:assertalmosteq(expectedDLoss:sum(), obtainedDLoss:sum(), 1e-6, 'Fail to compute autoencoder sparse Dloss given a single sample')
    
 end
 
@@ -52,25 +52,25 @@ function sparseCriterionTester.miniBatch()
    local sparseInput = input:sparsify()
    
    -- compute the objective with dense vector
+   local maskDense  = input:ne(0)
    local maskSparse = input:eq(0)
-   output[maskSparse] = input[maskSparse] --artificially create a zero loss for sparseInput
    
    
    local mseFct       = nn.MSECriterion()
    local sparseMseFct = nn.SparseCriterion(nn.MSECriterion())
    
    
-   local expectedLoss  = mseFct      :forward(output , input      ) --we need to mult
-   local obtainedLoss  = sparseMseFct:forward(output , sparseInput) --autoencoder loss
+   local expectedLoss  = mseFct      :forward(output[maskDense] , input[maskDense]      ) --we need to mult
+   local obtainedLoss  = sparseMseFct:forward(output            , sparseInput) --autoencoder loss
       
    tester:assertalmosteq(expectedLoss , obtainedLoss, 1e-6, 'Fail to compute autoencoder sparse loss given a mini-batch')
    
    
    --autoencoder loss
-   local expectedDLoss = mseFct      :backward(output, input) --autoencoder loss
-   local obtainedDLoss = sparseMseFct:backward(output, sparseInput) 
+   local expectedDLoss = mseFct      :backward(output[maskDense], input[maskDense]) --autoencoder loss
+   local obtainedDLoss = sparseMseFct:backward(output           , sparseInput) 
    
-   tester:assertTensorEq(expectedDLoss, obtainedDLoss, 1e-6, 'Fail to compute autoencoder sparse Dloss given a mini-batch')
+   tester:assertalmosteq(expectedDLoss:sum(), obtainedDLoss:sum(), 1e-6, 'Fail to compute autoencoder sparse Dloss given a mini-batch')
    
 end
 
@@ -83,8 +83,9 @@ function sparseCriterionTester.miniBatchWithNoSizeAverage()
    local sparseInput = input:sparsify()
    
    -- compute the objective with dense vector
+   local maskDense  = input:ne(0)
    local maskSparse = input:eq(0)
-   output[maskSparse] = input[maskSparse] --artificially create a zero loss for sparseInput
+   
    
    
    local mseFct       = nn.MSECriterion()
@@ -95,20 +96,17 @@ function sparseCriterionTester.miniBatchWithNoSizeAverage()
    sparseMseFct.sizeAverage = false
    
    
-   local expectedLoss  = mseFct      :forward(output , input      ) --we need to mult
-   local obtainedLoss  = sparseMseFct:forward(output , sparseInput) --autoencoder loss
+   local expectedLoss  = mseFct      :forward(output[maskDense] , input[maskDense]) --we need to mult
+   local obtainedLoss  = sparseMseFct:forward(output            , sparseInput) --autoencoder loss
       
-   if obtainedLoss == NaN then
-      print("mmmh")
-   end   
-      
+
    tester:assertalmosteq(expectedLoss , obtainedLoss, 1e-6, 'Fail to compute autoencoder sparse loss given a mini-batch with no average')
    
    --autoencoder loss
-   local expectedDLoss = mseFct      :backward(output, input) --autoencoder loss
-   local obtainedDLoss = sparseMseFct:backward(output, sparseInput) 
+   local expectedDLoss = mseFct      :backward(output[maskDense], input[maskDense]) --autoencoder loss
+   local obtainedDLoss = sparseMseFct:backward(output           , sparseInput) 
    
-   tester:assertTensorEq(expectedDLoss, obtainedDLoss, 1e-6, 'Fail to compute autoencoder sparse Dloss given a mini-batch with no average')
+   tester:assertalmosteq(expectedDLoss:sum(), obtainedDLoss:sum(), 1e-6, 'Fail to compute autoencoder sparse Dloss given a mini-batch with no average')
 end
 
 
