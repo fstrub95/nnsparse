@@ -34,27 +34,81 @@ x:sparsify() --ok
 
 ### sparsify([elem]) ###
 
-Turn a dense matrix/vector into a sparse vector/matrix. Sparsification can be done by defining one element `elem ` default(0)
+Turn a dense matrix/vector into a sparse vector/matrix. Sparsification can be done by defining one element `elem ` default(0). The sparse matix is returned as a table of sparse vector.
 ```lua
 x = torch.zeros(6)
 x[2] = 1
 x[6] = 8
 x[3] = 4
 
-x:sparsify()
+th> x:sparsify()
  2  1
  3  4
  6  8
 
+x = torch.ones(6,6):apply(function(x) if torch.uniform() < 0.6 then return 0 else return x end end)
+th> x:sparsify()
+{
+  1 : DoubleTensor - size: 1x2
+  2 : DoubleTensor - size: 2x2
+  3 : DoubleTensor - size: 2x2
+  4 : DoubleTensor - size: 2x2
+  5 : DoubleTensor - size: 1x2
+  6 : DoubleTensor - size: 1x2
+}
+
+th> x:sparsify()[2]
+ 1  1
+ 6  1
+ 
 ```
 
-<a name="nn.Concat"></a>
-## Concat ##
+<a name="torch.Tensor.densify"></a>
+## densify([elem], [dim]) ##
+Turn a sparse vector/matrix into a dense vector/matrix. The sparse element can be choosen. The final dimension can be provide to speed up the method. Otherwise, the method will find itself the final size.
+
+```lua
+th> x = torch.Tensor{{1,1},{3,4},{6,2}}
+                                                                      [0.0002s]	
+th> x:densify()
+ 1
+ 0
+ 4
+ 0
+ 0
+ 2
+
+th> x:densify(0/0)
+1.000000
+nan
+4.000000
+nan
+nan
+2.000000
 
 
-Concat concatenates the output of one layer of "parallel" modules along the
-provided dimension `dim`: they take the same inputs, and their output is
-concatenated.
+th> x:densify(0, 8)
+ 1
+ 0
+ 4
+ 0
+ 0
+ 2
+ 0
+ 0
+
+th> y = { torch.Tensor{{1,1},{3,4},{6,2}}, torch.Tensor{{4,8}} }
+{
+  1 : DoubleTensor - size: 3x2
+  2 : DoubleTensor - size: 1x2
+}
+
+th>  torch.Tensor.densify(y)
+ 1  0  4  0  0  2
+ 0  0  0  8  0  0
+
+ 
+```
 
 
 ## Layers ##
