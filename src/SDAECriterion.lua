@@ -42,35 +42,25 @@ function SDAECriterion:prepareInput(input)
    self.maskBeta:resize(input:size()):byte()
 
 
-   --enable mini-batch by linearizing data
-   local viewInput = input
-   local viewAlpha = self.maskAlpha
-   local viewBeta  = self.maskBeta
-   if input:nDimension() > 1 then
-      viewInput = input:view(-1)
-      viewAlpha = self.maskAlpha:view(-1)
-      viewBeta  = self.maskBeta:view(-1)
-   end
-   
-   local i = 0
-   self.input:apply(function(x)
+   local vInput     = self.input:view(-1)
+   local vMaskAlpha = self.maskAlpha:view(-1)
+   local vMaskBeta  = self.maskBeta:view(-1)
 
-         i = i + 1
 
-         viewAlpha[i] = 1
-         viewBeta[i]  = 0
+   for i = 1, vInput:nElement() do
+
+         vMaskAlpha[i] = 1
+         vMaskBeta[i]  = 0
 
          local r = torch.uniform()
-         if      r < self.noiseRatio                                   then return x + torch.normal(self.noiseMean, self.noiseStd)  -- add gaussian noise
-         elseif  r < self.noiseRatio + self.flipRatio                  then return self.flipRange[torch.uniform() > 0.5 and 1 or 2] -- either return min/max
-         elseif  r < self.noiseRatio + self.flipRatio + self.hideRatio then return 0                                                -- remove data
-         else                                                           
-            viewAlpha[i] = 0
-            viewBeta[i]  = 1
-            return x
+         if      r < self.noiseRatio                                   then vInput[i] = vInput[i] + torch.normal(self.noiseMean, self.noiseStd)  -- add gaussian noise
+         elseif  r < self.noiseRatio + self.flipRatio                  then vInput[i] = self.flipRange[torch.uniform() > 0.5 and 1 or 2] -- either return min/max
+         elseif  r < self.noiseRatio + self.flipRatio + self.hideRatio then vInput[i] = 0                                                -- remove data
+         else
+            vMaskAlpha[i] = 0
+            vMaskBeta[i]  = 1
          end
-
-   end)
+   end
    
    return self.input
 
@@ -108,21 +98,27 @@ function SDAECriterion:updateGradInput(estimate, target, index)
 
    if index == nil then -- not-sparse
 
-      local viewAlpha = self.maskAlpha
-      if viewAlpha:nDimension() > 1 then
-         viewAlpha = viewAlpha:view(-1)
-      end
+        dloss[self.maskAlpha] = dloss[self.maskAlpha]* self.alpha
+        dloss[self.maskBeta ] = dloss[self.maskBeta ]* self.beta
 
-      local i = 0
-      dloss:apply(function(x)
-         i = i +1
-         if viewAlpha[i] == 1 then
-            return self.alpha * x 
-         else
-            return self.beta  * x
-         end
-      end
-      )
+
+      --crash on some very rare case with luajit...
+
+--      local viewAlpha = self.maskAlpha
+--      if viewAlpha:nDimension() > 1 then
+--         viewAlpha = viewAlpha:view(-1)
+--      end
+--
+--      local i = 0
+--      dloss:apply(function(x)
+--         i = i +1
+--         if viewAlpha[i] == 1 then
+--            return self.alpha * x 
+--         else
+--            return self.beta  * x
+--         end
+--      end
+--      )
 
    else --sparse
 
