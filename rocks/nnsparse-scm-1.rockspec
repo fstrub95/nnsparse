@@ -1,5 +1,5 @@
 package = "nnsparse"
-version = "0.1"
+version = "scm-1"
 
 source = {
    url = "git://github.com/fstrub95/nnsparse.git",
