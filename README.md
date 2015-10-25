@@ -3,14 +3,16 @@ Tools for sparse networks with the Torch Framework
 
 
 <a name="nn.Containers"></a>
-## Tensor ##
+## Sparse Tensor ##
 
-Additional methods were added to Tensor to handle sparse inputs
+Additional methods are added to Tensor to handle sparse inputs
 
   * [sparsify](#torch.Tensor.sparsify) : turn a dense matrix/vector into a sparse vector/matrix
   * [densify](#torch.Tensor.densify) : turn a sparse matrix/vector into a dense vector/matrix
   * [ssort](#torch.Tensor.ssort) : sort a sparse vector/matrix according its values
-  * [ssortByIndex](#torch.Tensor.ssortByIndex) : sort the index of a sparseVector/matrix` ;
+  * [ssortByIndex](#torch.Tensor.ssortByIndex) : sort the index of a sparseVector/matrix ;
+
+New methods will be progressively added. To come, addSparse(), mulSparse().  
 
 Warning : if the tensor type is modified after loading the nnsparse package. The previous method will be erasesd
 ```lua
@@ -28,15 +30,35 @@ x[4] = 1
 x:sparsify() --ok
 # Layers #
 ```
+
+## Layer ##
+  * [SparseLinearBatch](#nn.SparseLinearBatch) : enable minibatch on sparse vectors 
+
 ## Criterion ##
+  * [SparseCriterion](#nn.SparseLinearBatch) : encapsulate nn.Criterion to handle sparse inputs/targets 
+  * [SDAECriterion](#nn.SDAECriterion) : Compute a denoising loss for autoencoders 
+  * [SDAESparseCriterion](#nn.SDAESparseCriterion) : Compute a denoising loss for sparse autoencoders 
 
-This is an abstract [Module](module.md#nn.Module) class which declares methods defined in all containers.
-It reimplements many of the Module methods such that calls are propagated to the 
-contained modules. For example, a call to [zeroGradParameters](module.md#nn.Module.zeroGradParameters)
-will be propagated to all contained modules.
+<a name="torch.Tensor"></a>
 
-<a name="nn.Container.add"></a>
-### add(module) ###
+Warning : if the tensor type is modified after loading the nnsparse package. The previous method will be erasesd
+```lua
+require("nnsparse")
+torch.setdefaulttensortype('torch.FloatTensor') 
+x = torch.zeros(10)
+x[4] = 1
+x:sparsify() --error
+```
+```lua
+torch.setdefaulttensortype('torch.FloatTensor') 
+require("nnsparse")
+x = torch.zeros(10)
+x[4] = 1
+x:sparsify() --ok
+# Layers #
+```
+
+### sparsify ###
 Adds the given `module` to the container. The order is important
 
 <a name="nn.Container.get"></a>
