@@ -111,6 +111,7 @@ end
 
 
 
+
 print('')
 print('Testing sparseCriterion.lua')
 print('')

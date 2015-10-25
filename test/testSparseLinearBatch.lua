@@ -48,7 +48,7 @@ end
 
 function sparseLinearBatch.miniBatch() 
 
-   local input = torch.Tensor(10,100):uniform():apply( sparsifier)
+   local input = torch.Tensor(10,100):uniform():apply(sparsifier)
    local dloss = torch.Tensor(10, 50):uniform()
                                     
    local sparseInput = input:sparsify()

@@ -49,6 +49,7 @@ function SDAESparseCriterion:updateOutput(estimates, targets)
    self.estimateBuf = self.predictBuf or estimates[1].new()
 
    local loss = 0
+   local noElem = 0
    for k, target in pairs(targets) do
 
       -- retrieve expected target
@@ -70,16 +71,13 @@ function SDAESparseCriterion:updateOutput(estimates, targets)
       self.criterion.maskAlpha = self.masks[k].alpha
       self.criterion.maskBeta  = self.masks[k].beta
 
-      local curLoss = self.criterion:updateOutput(self.estimateBuf, t)
-      if self.sizeAverage2 == true then
-         curLoss = curLoss/t:size(1)
-      end
+      noElem = noElem + t:size(1)
 
-      loss = loss + curLoss
+      loss = loss + self.criterion:updateOutput(self.estimateBuf, t)
    end
    
    if self.sizeAverage == true then
-      loss = loss/estimates:nElement()
+      loss = loss/noElem
    end
    
    return loss
@@ -99,6 +97,7 @@ function SDAESparseCriterion:updateGradInput(estimates, targets)
 
    self.targetBuf = self.targetBuf or estimates[1].new()
 
+   local noElem = 0
    for k, target in pairs(targets) do
 
       -- retrieve expected targets
@@ -116,14 +115,13 @@ function SDAESparseCriterion:updateGradInput(estimates, targets)
    
       self.dloss[k] = self.criterion:updateGradInput(estimate, self.targetBuf, index)
 
-      if self.sizeAverage2 == true then
-         self.dloss[k]:div(target:size(1))
-      end
+   
+      noElem = noElem + target:size(1)
       
    end
 
     if self.sizeAverage == true then
-       self.dloss:div(estimates:nElement())
+       self.dloss:div(noElem)
     end
 
    return self.dloss

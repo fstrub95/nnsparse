@@ -115,7 +115,7 @@ function SDAESparseCriterionTester.prepareMixture()
    {
       hideRatio  = hideRatio,
       flipRatio  = flipRatio,
-      flipRange  = {NaN, NaN},
+      flipRange  = {999, 999},
    })
    
    local noisyInput = criterion:prepareInput(input)
@@ -125,7 +125,7 @@ function SDAESparseCriterionTester.prepareMixture()
       local oneInput = oneInput[{{}, 2}] --remove index
 
       local noHide  = oneInput:eq( 0 ):sum()/oneInput:size(1)
-      local noFlip  = oneInput:eq(NaN):sum()/oneInput:size(1)
+      local noFlip  = oneInput:eq(999):sum()/oneInput:size(1)
 
       tester:assertbw(noHide , hideRatio , 0.10, "Check number of corrupted input : hide          (mixture)")
       tester:assertbw(noFlip , flipRatio , 0.10, "Check number of corrupted input : SaltAndPepper (mixture)")
@@ -169,11 +169,11 @@ function SDAESparseCriterionTester.NoNoise()
    tester:assertTensorEq(obtainedDLoss, expectedDLoss:mul(beta), 1e-6, 'Fail to compute sparse SDAE Dloss with no noise')
 
 end
---
---
---
---
-function SDAESparseCriterionTester.NoNoiseSizeAverage()
+
+
+
+
+function SDAESparseCriterionTester.NoNoiseNoSizeAverage()
 
    local beta = 0.5
    
@@ -209,60 +209,6 @@ function SDAESparseCriterionTester.NoNoiseSizeAverage()
 
 end
 
-
-function SDAESparseCriterionTester.NoNoiseSizeAverageWithReducedSize()
-
-   local beta = 0.5
-   
-   local basicCriterion = nn.MSECriterion()
-   local sdaeCriterion  = nn.SDAESparseCriterion(nn.MSECriterion(), 
-   {
-      alpha = 1,
-      beta =  beta,
-      hideRatio  = 0,
-      noiseRatio = 0,
-      flipRatio  = 0,
-   })
-   
-   basicCriterion.sizeAverage = false
-   sdaeCriterion.sizeAverage  = false
-   
-   sdaeCriterion.sizeAverage2 = true
-   
-   local input       = torch.ones(10, 100)
-   local sparseInput = input:sparsify() 
-   local noisyInput  = sdaeCriterion:prepareInput(sparseInput)
-
-   local output = torch.Tensor(10, 100):uniform()
-   
-   
-   local expectedLoss = 0
-   for i = 1, input:size(1) do
-      local mask = input[i]:ne(0)
-      expectedLoss = expectedLoss + basicCriterion:forward(output[i][mask], input[i][mask]) / mask:size(1)
-   end
-   expectedLoss = expectedLoss * beta
-   
-   local obtainedLoss = sdaeCriterion:forward(output, noisyInput)
-   
-
-   tester:assertalmosteq(obtainedLoss, expectedLoss, 1e-6, 'Fail to compute sparse SDAE loss with no noise')
-
-
-   local expectedDLossSum = 0
-   for i = 1, input:size(1) do
-      local mask = input[i]:ne(0)
-      local curDLoss = basicCriterion:backward(output[i][mask], input[i][mask])
-      expectedDLossSum = expectedDLossSum + beta*(curDLoss:sum() / mask:size(1))
-   end
-   expectedDLossSum = expectedDLossSum * beta
-   
-   local obtainedDLossSum = sdaeCriterion:backward(output, noisyInput):sum()
-   
-   tester:assertalmosteq(obtainedDLossSum, obtainedDLossSum, 1e-6, 'Fail to compute sparse SDAE Dloss with no noise')
-
-
-end
 
 
 function SDAESparseCriterionTester.WithNoise()
@@ -307,7 +253,7 @@ function SDAESparseCriterionTester.WithNoise()
   diff[maskAlpha] = diff[maskAlpha]* alpha
   diff[maskBeta ] = diff[maskBeta ]* beta
 
-  local expectedLoss = diff:sum() / output:nElement()
+  local expectedLoss = diff:sum() / diff:nElement()
   local obtainedLoss = criterion:forward(output, noisyInput)
    
   tester:assertalmosteq(expectedLoss, obtainedLoss, 1e-6, 'Fail to compute SDAE loss with noise')
@@ -318,7 +264,7 @@ function SDAESparseCriterionTester.WithNoise()
   diff[maskAlpha] = diff[maskAlpha]* alpha
   diff[maskBeta ] = diff[maskBeta ]* beta
 
-  local expectedDLossSum = diff:sum() / output:nElement() 
+  local expectedDLossSum = diff:sum() / diff:nElement() 
   local obtainedDLossSum = criterion:backward(output,noisyInput):sum()
   
   tester:assertalmosteq(expectedDLossSum, obtainedDLossSum, 1e-6, 'Fail to compute SDAE Dloss with noise')
@@ -328,8 +274,65 @@ end
 
 
 
+--function SDAESparseCriterionTester.NoNoiseSizeAverageWithReducedSize()
+--
+--   local beta = 0.5
+--   
+--   local basicCriterion = nn.MSECriterion()
+--   local sdaeCriterion  = nn.SDAESparseCriterion(nn.MSECriterion(), 
+--   {
+--      alpha = 1,
+--      beta =  beta,
+--      hideRatio  = 0,
+--      noiseRatio = 0,
+--      flipRatio  = 0,
+--   })
+--   
+--   basicCriterion.sizeAverage = false
+--   sdaeCriterion.sizeAverage  = false
+--   
+--   sdaeCriterion.sizeAverage2 = true
+--   
+--   local input       = torch.ones(10, 100)
+--   local sparseInput = input:sparsify() 
+--   local noisyInput  = sdaeCriterion:prepareInput(sparseInput)
+--
+--   local output = torch.Tensor(10, 100):uniform()
+--   
+--   
+--   local expectedLoss = 0
+--   for i = 1, input:size(1) do
+--      local mask = input[i]:ne(0)
+--      expectedLoss = expectedLoss + basicCriterion:forward(output[i][mask], input[i][mask]) / mask:size(1)
+--   end
+--   expectedLoss = expectedLoss * beta
+--   
+--   local obtainedLoss = sdaeCriterion:forward(output, noisyInput)
+--   
+--
+--   tester:assertalmosteq(obtainedLoss, expectedLoss, 1e-6, 'Fail to compute sparse SDAE loss with no noise')
+--
+--
+--   local expectedDLossSum = 0
+--   for i = 1, input:size(1) do
+--      local mask = input[i]:ne(0)
+--      local curDLoss = basicCriterion:backward(output[i][mask], input[i][mask])
+--      expectedDLossSum = expectedDLossSum + beta*(curDLoss:sum() / mask:size(1))
+--   end
+--   expectedDLossSum = expectedDLossSum * beta
+--   
+--   local obtainedDLossSum = sdaeCriterion:backward(output, noisyInput):sum()
+--   
+--   tester:assertalmosteq(obtainedDLossSum, obtainedDLossSum, 1e-6, 'Fail to compute sparse SDAE Dloss with no noise')
+--
+--
+--end
+
+
+
+
 print('')
-print('Testing SDAECriterion.lua')
+print('Testing SDAESparseCriterion.lua')
 print('')
 
 math.randomseed(os.time())
