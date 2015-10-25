@@ -67,7 +67,7 @@ th> x:sparsify()[2]
 ```
 
 <a name="torch.Tensor.densify"></a>
-## densify([elem], [dim]) ##
+### densify([elem], [dim]) ###
 Turn a sparse vector/matrix into a dense vector/matrix. The sparse element can be choosen. The final dimension can be provide to speed up the method. Otherwise, the method will find itself the final size.
 
 ```lua
@@ -115,7 +115,7 @@ th>  torch.Tensor.densify(y)
 ```
 
 <a name="torch.Tensor.ssort"></a>
-## ssort([ascend], [inplace]) ##
+### ssort([ascend], [inplace]) ###
 Sort a sparse vector. By default, it is a descent sort, the sort can also be inplaced.
 
 ```lua
@@ -155,7 +155,7 @@ th> x:ssortByIndex(true)
   * [SparseLinearBatch](#nn.SparseLinearBatch) : enable minibatch on sparse vectors 
  
 <a name="nn.SparseLinearBatch"></a>
-## nn.SparseLinearBatch(inputSize, outputSize, [ignoreAccGrad]) ##
+### nn.SparseLinearBatch(inputSize, outputSize, [ignoreAccGrad]) ###
 This layer enables to use minibatch for sparse inputs with no loss in speed. This feature is not available in sparseLinear. the GPU is support is under development. If the layer `nn.SparseLinearBatch` is the input layer, then, it is advisable to desactivate the AccGrad feature. It will greatly increase the speed of backpropagation.
 
 ```lua
@@ -171,18 +171,46 @@ sparseLayer:backward(x,someLoss)
 ```
 
 
-
-
-
 ## Criterions ##
-  * [SparseCriterion](#nn.SparseLinearBatch) : encapsulate nn.Criterion to handle sparse inputs/targets 
+  * [SparseCriterion](#nn.SparseCriterion) : encapsulate nn.Criterion to handle sparse inputs/targets 
   * [SDAECriterion](#nn.SDAECriterion) : Compute a denoising loss for autoencoders 
   * [SDAESparseCriterion](#nn.SDAESparseCriterion) : Compute a denoising loss for sparse autoencoders 
 
+Sparse criterion deals with sparse target vectors. This is mainly used with autoencoders with sparse input.
+
+WARNING, sparse loss are averaged over the number of KWNOWN Values. 
+Example, if the output values has 20 elements and the sparse target vector has 5 eleemnts. The final averaged loss will be divided by 5.
+```
+sparseCriterion(x, t)  = 1/t:size(1) \sum Criterion(x, t)
+```
+
+If t is a sparse matrix with a total of n elements, the sum operation still operates over all the elements, and divides by n.
+
+The division by n can be avoided if one sets the internal variable sizeAverage to false:
+```
+criterion.sizeAverage = false
+```
+
+<a name="nn.SparseCriterion"></a>
+### nn.SparseCriterion(denseEstimate, sparseTarget) ###
+This layer enables to encapsulate a loss from the nn package. 
+
+```lua
+output = torch.Tensor(10,100):uniform()
+
+sparseTarget = torch.Tensor(10,100):uniform()
+sparseTarget:apply(function(x) if torch.uniform() < 0.6 then return 0 else return x end end)
+sparseTarget = sparseTarget:sparsify()
+
+criterion = nn.SparseCriterion(nn.MSECriterion())
+
+criterion:forward(output, sparseTarget)
+criterion:backward(output, sparseTarget)
+```
 
 
-<a name="nn.Container.get"></a>
-### get(index) ###
+<a name="nn.SDAECriterion"></a>
+### SDAECriterion(index) ###
 Returns the contained modules at index `index`.
 
 <a name="nn.Container.size"></a>
