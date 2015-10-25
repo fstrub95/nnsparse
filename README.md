@@ -9,8 +9,8 @@ Additional methods are added to Tensor to handle sparse inputs
 
   * [sparsify](#torch.Tensor.sparsify) : turn a dense matrix/vector into a sparse vector/matrix
   * [densify](#torch.Tensor.densify) : turn a sparse matrix/vector into a dense vector/matrix
-  * [ssort](#torch.Tensor.ssort) : sort a sparse vector/matrix according its values
-  * [ssortByIndex](#torch.Tensor.ssortByIndex) : sort the index of a sparseVector/matrix ;
+  * [ssort](#torch.Tensor.ssort) : sort a sparse vector according its values
+  * [ssortByIndex](#torch.Tensor.ssortByIndex) : sort the index of a sparseVector ;
 
 New methods will be progressively added. To come, addSparse(), mulSparse().  
 
@@ -60,7 +60,6 @@ th> x:sparsify()
 th> x:sparsify()[2]
  1  1
  6  1
- 
 ```
 
 <a name="torch.Tensor.densify"></a>
@@ -69,7 +68,6 @@ Turn a sparse vector/matrix into a dense vector/matrix. The sparse element can b
 
 ```lua
 th> x = torch.Tensor{{1,1},{3,4},{6,2}}
-                                                                      [0.0002s]	
 th> x:densify()
  1
  0
@@ -106,9 +104,47 @@ th> y = { torch.Tensor{{1,1},{3,4},{6,2}}, torch.Tensor{{4,8}} }
 th>  torch.Tensor.densify(y)
  1  0  4  0  0  2
  0  0  0  8  0  0
-
  
+ torch.Tensor.densify(y, 0, torch.Tensor{2, 8})
+ 1  0  4  0  0  2  0  0
+ 0  0  0  8  0  0  0  0
 ```
+
+<a name="torch.Tensor.ssort"></a>
+## ssort([ascend], [inplace]) ##
+Sort a sparse vector. By default, it is a descent sort, the sort can also be inplaced.
+
+```lua
+x = torch.Tensor{{1,1},{3,4},{6,2}}
+th> x:ssort()
+ 1  1
+ 6  2
+ 3  4
+ 
+ th> x:ssort(true)
+ 3  4
+ 6  2
+ 1  1
+```
+
+## ssortByIndex([ascend], [inplace]) ##
+Sort a sparse vector by using its index. By default, it is a descent sort, the sort can also be inplaced.
+This feature is very important while using SparseLinear, or SparseLinearBatch.
+
+```lua
+x = torch.Tensor{{3,1},{1,4},{6,2}}
+th> x:ssortByIndex()
+ 1  4
+ 3  1
+ 6  2
+
+th> x:ssortByIndex(true)
+ 6  2
+ 3  1
+ 1  4
+```
+
+
 
 
 ## Layers ##
