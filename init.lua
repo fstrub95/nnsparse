@@ -7,4 +7,4 @@ include('SDAECriterion.lua')
 include('SDAESparseCriterion.lua')
 include('SparseCriterion.lua')
 
-include('SparseLinearBath.lua')
+include('SparseLinearBatch.lua')
