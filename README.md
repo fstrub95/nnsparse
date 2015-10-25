@@ -153,6 +153,26 @@ th> x:ssortByIndex(true)
 
 ## Layers ##
   * [SparseLinearBatch](#nn.SparseLinearBatch) : enable minibatch on sparse vectors 
+ 
+<a name="nn.SparseLinearBatch"></a>
+## nn.SparseLinearBatch(inputSize, outputSize, [ignoreAccGrad]) ##
+This layer enables to use minibatch for sparse inputs with no loss in speed. This feature is not available in sparseLinear. the GPU is support is under development. If the layer `nn.SparseLinearBatch` is the input layer, then, it is advisable to desactivate the AccGrad feature. It will greatly increase the speed of backpropagation.
+
+```lua
+x = torch.Tensor(10,100):uniform()
+x:apply(function(x) if torch.uniform() < 0.6 then return 0 else return x end end)
+x = x:sparsify()
+
+local sparseLayer = nn.SparseLinearBatch(10, 100)
+sparseLayer:forward(x)
+
+sparseLayer:backward(x,someLoss)
+
+```
+
+
+
+
 
 ## Criterions ##
   * [SparseCriterion](#nn.SparseLinearBatch) : encapsulate nn.Criterion to handle sparse inputs/targets 
