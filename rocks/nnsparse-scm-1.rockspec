@@ -20,6 +20,6 @@ dependencies = {
  build = {
     type = "builtin"
     modules = {
-      apricot = "src/SparseTools.lua",
+      sparseTools = "src/SparseTools.lua",
     }
  }
