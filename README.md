@@ -1,6 +1,10 @@
 # nnsparse
 Tools for sparse networks with the Torch Framework
 
+To install the plugin:
+```
+luarocks install nnsparse
+```
 
 <a name="nn.Containers"></a>
 ## Sparse Tensor ##
