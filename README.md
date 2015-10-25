@@ -9,7 +9,7 @@ luarocks install nnsparse
 Feel free to contact me for furhter information.
 
 You may also find additional information on my webpage http://www.lighting-torch.com/
-A concrete network using sparse input for collaborative filtering can be found here: 
+A concrete network using sparse input for collaborative filtering can be found here: https://github.com/fstrub95/Autoencoders_cf
 
 
 <a name="nn.Containers"></a>
