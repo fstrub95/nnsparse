@@ -18,7 +18,7 @@ dependencies = {
 }
 
  build = {
-    type = "builtin"
+    type = "builtin",
     modules = {
       sparseTools = "src/SparseTools.lua",
     }
