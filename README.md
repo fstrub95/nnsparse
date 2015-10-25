@@ -137,7 +137,7 @@ th> x:ssort()
  1  1
 ```
 
-## ssortByIndex([ascend], [inplace]) ##
+### ssortByIndex([ascend], [inplace]) ###
 Sort a sparse vector by using its index. By default, it is a descent sort, the sort can also be inplaced.
 This feature is very important while using SparseLinear, or SparseLinearBatch.
 
@@ -216,7 +216,7 @@ criterion:backward(output, sparseTarget)
 
 
 <a name="nn.SDAECriterion"></a>
-### SDAECriterion(criterion, SDAEconf) ###
+### nn.SDAECriterion(criterion, SDAEconf) ###
 Stacked Denoising Autoencoder criterion is based on Pascal Vincent et al. paper: http://dl.acm.org/citation.cfm?id=1953039. It aims at teaching an autoencoder to denoise data. Tis enable to learn more easily low-dimension features.
 
 There is three ways to corrupt the input:
@@ -260,7 +260,7 @@ When the nnsparse module is loaded. All the nn.criterion gets a `prepareInput` m
  
 
 <a name="nn.SDAESparseCriterion"></a>
-### SDAESparseCriterion(criterion, SDAEconf) ###
+### nn.SDAESparseCriterion(criterion, SDAEconf) ###
 This method encapsulate the SDAE criterion and apply it to sparse inputs.  
 
 ```lua
