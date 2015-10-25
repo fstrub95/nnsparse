@@ -30,36 +30,42 @@ x[4] = 1
 x:sparsify() --ok
 # Layers #
 ```
+<a name="torch.Tensor.densify"></a>
 
-## Layer ##
+### sparsify([elem]) ###
+
+Turn a dense matrix/vector into a sparse vector/matrix. Sparsification can be done by defining one element `elem ` default(0)
+```lua
+x = torch.zeros(6)
+x[2] = 1
+x[6] = 8
+x[3] = 4
+
+x:sparsify()
+ 2  1
+ 3  4
+ 6  8
+
+```
+
+<a name="nn.Concat"></a>
+## Concat ##
+
+
+Concat concatenates the output of one layer of "parallel" modules along the
+provided dimension `dim`: they take the same inputs, and their output is
+concatenated.
+
+
+## Layers ##
   * [SparseLinearBatch](#nn.SparseLinearBatch) : enable minibatch on sparse vectors 
 
-## Criterion ##
+## Criterions ##
   * [SparseCriterion](#nn.SparseLinearBatch) : encapsulate nn.Criterion to handle sparse inputs/targets 
   * [SDAECriterion](#nn.SDAECriterion) : Compute a denoising loss for autoencoders 
   * [SDAESparseCriterion](#nn.SDAESparseCriterion) : Compute a denoising loss for sparse autoencoders 
 
-<a name="torch.Tensor"></a>
 
-Warning : if the tensor type is modified after loading the nnsparse package. The previous method will be erasesd
-```lua
-require("nnsparse")
-torch.setdefaulttensortype('torch.FloatTensor') 
-x = torch.zeros(10)
-x[4] = 1
-x:sparsify() --error
-```
-```lua
-torch.setdefaulttensortype('torch.FloatTensor') 
-require("nnsparse")
-x = torch.zeros(10)
-x[4] = 1
-x:sparsify() --ok
-# Layers #
-```
-
-### sparsify ###
-Adds the given `module` to the container. The order is important
 
 <a name="nn.Container.get"></a>
 ### get(index) ###
