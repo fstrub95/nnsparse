@@ -210,8 +210,47 @@ criterion:backward(output, sparseTarget)
 
 
 <a name="nn.SDAECriterion"></a>
-### SDAECriterion(index) ###
-Returns the contained modules at index `index`.
+### SDAECriterion(criterion, SDAEconf) ###
+Stacked Denoising Autoencoder criterion is based on Pascal Vincent et al. paper: http://dl.acm.org/citation.cfm?id=1953039. It aims at teaching an autoencoder to denoise data. Tis enable to learn more easily low-dimension features.
+
+There is three ways to corrupt the input:
+ - Adding Gaussian noise
+ - Replacing one of the input by some predefined extrema (Salt&Paper)
+ - Hide some of the values (MaskNoise)
+
+The loss is then computed as follow:
+```
+ sparseCriterion(x, t)  = alpha* \sum (i in corrupted) Criterion(x_i, t) + beta* \sum_(i in non-corupted) Criterion(x_i, t)
+```
+ Where alpha, beta are respectively two hyperparameters that either strengthen the denoising aspect or the reconstruction apsect of the loss. 
+
+```lua
+criterion = nn.SDAECriterion(nn.MSECriterion(), 
+{
+   alpha = 1
+   beta  = 0.5
+   hideRatio = 0.2,
+   noiseRatio = 0.1,
+   noiseMean  = 0,
+   noiseStd   = 0.2,
+   flipRatio = 0.1,
+   flipRange = {-1, 1},
+   })
+   
+-- the input is corrupted. The corruption mask is stored inside the loss
+noisyInput = criterion:prepareInput(input)
+
+loss  = criterion:forward (output, noisyInput)
+dloss = criterion:backward(output, noisyInput)
+   
+```
+
+When the nnsparse module is loaded. All the nn.criterion gets a `prepareInput` method. It is equivalent to the identity method. Thus, one may switch from a classic criterion to a SDAE criterion wihtout modifying his soure code.
+ 
+
+
+
+
 
 <a name="nn.Container.size"></a>
 ### size() ###
