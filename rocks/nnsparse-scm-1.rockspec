@@ -16,3 +16,10 @@ description = {
 dependencies = {
    "torch >= 7.0",
 }
+
+ build = {
+    type = "builtin"
+    modules = {
+      apricot = "src/SparseTools.lua",
+    }
+ }
