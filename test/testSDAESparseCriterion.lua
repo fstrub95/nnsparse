@@ -219,8 +219,8 @@ function SDAESparseCriterionTester.WithNoise()
    local sparseInput = input:sparsify()
    local sparseMask  = input:ne(0)
 
-   local alpha = 0
-   local beta  = 1
+   local alpha = 0.8
+   local beta  = 0.3
    
   local criterion = nn.SDAESparseCriterion(nn.MSECriterion(), 
   {
