@@ -76,8 +76,8 @@ function sparseLinearBatch.miniBatch()
    denseLayer:backward (input      , dloss)
    sparseLayer:backward(sparseInput, dloss)
    
-   tester:assertTensorEq(denseLayer.gradWeight, sparseLayer.gradWeight, 1e-6, 'Fail to compute sparseLinearBatch:backward for a minibatch')
-   tester:assertTensorEq(denseLayer.gradBias  , sparseLayer.gradBias  , 1e-6, 'Fail to compute sparseLinearBatch:backward for a minibatch')
+   tester:assertTensorEq(denseLayer.gradWeight, sparseLayer.gradWeight, 1e-6, 'Fail to compute sparseLinearBatch:backward for a minibatch : gradWeight')
+   tester:assertTensorEq(denseLayer.gradBias  , sparseLayer.gradBias  , 1e-6, 'Fail to compute sparseLinearBatch:backward for a minibatch : bias')
    
 end
 

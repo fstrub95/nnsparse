@@ -149,27 +149,12 @@ function SparseLinearBatch:accGradParameters(input, gradOutput)
 
    elseif type(input) == "table" then
 
-      -- initialize memory without parasatizing non-batch method
-      self.gradWeightBuf = self.gradWeightBuf or torch.zeros(self.layer.gradWeight:size())
-      self.gradBiasBuf   = self.gradBiasBuf   or torch.zeros(self.layer.gradBias:size())
-
       local k = 0
       for _, oneInput in pairs(input) do
          k = k + 1
-         
-         self.layer:zeroGradParameters()
-         
-         -- computing gradient
+         -- Compute the gradient by accumulating it inside the sparseLinear
          self.layer:accGradParameters(oneInput, gradOutput[k])
-         
-         -- accumulating gradient
-         self.gradWeightBuf:add(self.layer.gradWeight)
-         self.gradBiasBuf:add(self.layer.gradBias) 
       end
-
-      -- Copy the buffer to keep the reference to gradWeight/gradBias unmodified
-      self.gradWeight:copy(self.gradWeightBuf)
-      self.gradBias:copy(self.gradBiasBuf)
 
    else
       error('input must be a either a 2D matrices or a table of 2D matrices')
