@@ -21,7 +21,7 @@ Additional methods are added to Tensor to handle sparse inputs
   * [densify](#torch.Tensor.densify) : turn a sparse matrix/vector into a dense vector/matrix
   * [ssort](#torch.Tensor.ssort) : sort a sparse vector according its values
   * [ssortByIndex](#torch.Tensor.ssortByIndex) : sort the index of a sparseVector ;
-  * [DynamicSparseTensor] : builder to efficiently create Tensor by preallocating memory (up to 100 time faster than classic methods)
+  * [DynamicSparseTensor](#DynamicSparseTensor) : builder to efficiently create Tensor by preallocating memory (up to 100 time faster than classic methods)
 
 New methods will be progressively added. To come, addSparse(), mulSparse().  
 
