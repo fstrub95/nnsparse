@@ -21,6 +21,7 @@ Additional methods are added to Tensor to handle sparse inputs
   * [densify](#torch.Tensor.densify) : turn a sparse matrix/vector into a dense vector/matrix
   * [ssort](#torch.Tensor.ssort) : sort a sparse vector according its values
   * [ssortByIndex](#torch.Tensor.ssortByIndex) : sort the index of a sparseVector ;
+  * [DynamicSparseTensor] : builder to efficiently create Tensor by preallocating memory (up to 100 time faster than classic methods)
 
 New methods will be progressively added. To come, addSparse(), mulSparse().  
 
@@ -154,6 +155,20 @@ th> x:ssortByIndex(true)
  1  4
 ```
 
+
+<a name="DynamicSparseTensor"></a>
+### DynamicSparseTensor.new(reserve, coefMult) ###
+
+This helper builder build SparseTensors by reducing the number of memory reallocation. It is similar to std::vector (g++). A sparse tensor is created with for `reserve` (default = 10) elements. It is then filled by calling the method `append(torch.Tensor(2))`. Whenever a sparse vector is full, its size is increased by `coefMult` (default = 2). Finally, the `build()` method resizes the final vector and it returns it. 
+
+```lua
+   local dynTensor = DynamicSparseTensor.new()
+   for i = 1, 256 do
+      dynTensor:append(torch.Tensor{1,1})
+   end 
+   local finalTensor = dynTensor:build()
+   dynTensor:reset()
+```
 
 
 

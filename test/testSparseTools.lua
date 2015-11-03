@@ -112,7 +112,7 @@ end
 function toolsTester.dynamicSparseTensor()
 
    --compute dummy sparse vector
-   local input = torch.Tensor(100,2)
+   local input = torch.Tensor(287,2)
    local i = 0
    input:apply(function() i = i + 1 return i end)
 
@@ -125,8 +125,7 @@ function toolsTester.dynamicSparseTensor()
    end 
    local finalTensor = dynTensor:build() 
    local tDyn = sys.toc()
-   
-   
+
    --
    tester:assertTensorEq(input, finalTensor, 0, 'Fail to build sparse dynamic Tensor')
    
@@ -143,12 +142,10 @@ function toolsTester.dynamicSparseTensor()
    -- check that the benchmark is consistent
    tester:assertTensorEq(input, staticTensor, 0, 'Fail to build sparse static Tensor')
    
-   print(tDyn  .. " .. " .. tStat)
    --check that dynamic allocation is faster
    tester:assertlt(tDyn, tStat, 'Static Tensor is faster than dynamic Tensor ;(')
 
 end
-
 
 
 
