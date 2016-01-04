@@ -173,10 +173,13 @@ This helper builder build SparseTensors by reducing the number of memory realloc
 
 
 ## Layers ##
-  * [SparseLinearBatch](#nn.SparseLinearBatch) : enable minibatch on sparse vectors 
+  * [SparseLinearBatch](#nnsparse.SparseLinearBatch) : enable minibatch on sparse vectors 
+  * [Densify](#nnsparse.Densify) : densify a sparse inputs  
+  * [Sparsifier](#nnsparse.Sparsifier) : sparsify a dense inputs 
+  * [Batchifier](#nnsparse.Batchifier) : Create minibatch on the fly  
  
-<a name="nn.SparseLinearBatch"></a>
-### nn.SparseLinearBatch(inputSize, outputSize, [ignoreAccGrad]) ###
+<a name="nnsparse.SparseLinearBatch"></a>
+### nnsparse.SparseLinearBatch(inputSize, outputSize, [ignoreAccGrad]) ###
 This layer enables to use minibatch for sparse inputs with no loss in speed. This feature is not available in sparseLinear. the GPU is support is under development. If the layer `nn.SparseLinearBatch` is the input layer, then, it is advisable to desactivate the AccGrad feature. It will greatly increase the speed of backpropagation.
 
 ```lua
@@ -184,13 +187,67 @@ x = torch.Tensor(10,100):uniform()
 x:apply(function(x) if torch.uniform() < 0.6 then return 0 else return x end end)
 x = x:sparsify()
 
-local sparseLayer = nn.SparseLinearBatch(10, 100)
+local sparseLayer = nn.SparseLinearBatch(100, 20)
 sparseLayer:forward(x)
 
 sparseLayer:backward(x,someLoss)
+```
+
+<a name="nnsparse.Densify"></a>
+### nnsparse.Densify(inputSize) ###
+This layer turns a sparse inputs (with 0) into a dense inputs 
+
+```lua
+x = torch.Tensor(10,100):uniform()
+x:apply(function(x) if torch.uniform() < 0.6 then return 0 else return x end end)
+x = x:sparsify()
+
+local denseNetwork = nn.Sequential()
+denseNetwork:add(nnsparse.Densify(100))
+denseNetwork:add(nnsparse.Linear(100, 20))
+denseNetwork:add(nn.Tanh())
+
+local sparseNetwork = nn.Sequential()
+sparseNetwork:add(nn.SparseLinearBatch(100, 20))
+sparseNetwork:add(nn.Tanh())
+
+local w1, dw1 = denseNetwork:getParameters()
+local w2, dw2 = sparseNetwork:getParameters()
+
+w2:copy(w1:clone())
+dw2:copy(dw1:clone())
+
+local outDense  = denseNetwork:forward(x)
+local outSparse = sparseNetwork:forward(x)
+
+assert(outDense:sum() == outSparse:sum())
 
 ```
 
+<a name="nnsparse.Sparsifier"></a>
+### nnsparse.Sparsifier([offset]) ###
+This layer turns a dense input into a sparse one. One may add an offset option to increase the sparse tensor index. 
+
+
+<a name="nnsparse.Batchifier"></a>
+### nnsparse.Batchifier(network, inputSize, [batchSize]) ###
+This network automatically create mini-batches on the forward step. 
+
+
+```lua
+x = torch.Tensor(200,100):uniform()
+x:apply(function(x) if torch.uniform() < 0.6 then return 0 else return x end end)
+x = x:sparsify()
+
+local denseNetwork = nn.Sequential()
+denseNetwork:add(nnsparse.Densify(10))
+denseNetwork:add(nnsparse.Linear(10, 100))
+denseNetwork:add(nn.Tanh())
+
+batchifier = nn.Batchifier(denseNetwork, 100, 20) 
+output     = batchifier:forward(newtrain, 20)     -- there is no memory explosion! 
+
+```
 
 ## Criterions ##
   * [SparseCriterion](#nnsparse.SparseCriterion) : encapsulate nn.Criterion to handle sparse inputs/targets 
@@ -213,7 +270,7 @@ criterion.sizeAverage = false
 ```
 
 <a name="nnsparse.SparseCriterion"></a>
-### nn.SparseCriterion(denseEstimate, sparseTarget) ###
+### nnsparse.SparseCriterion(denseEstimate, sparseTarget) ###
 This layer enables to encapsulate a loss from the nn package. 
 
 ```lua
@@ -275,7 +332,7 @@ When the nnsparse module is loaded. All the nn.criterion gets a `prepareInput` m
  
 
 <a name="nnsparse.SDAESparseCriterion"></a>
-### nn.SDAESparseCriterion(criterion, SDAEconf) ###
+### nnsparse.SDAESparseCriterion(criterion, SDAEconf) ###
 This method encapsulate the SDAE criterion and apply it to sparse inputs.  
 
 ```lua
