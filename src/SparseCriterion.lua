@@ -1,4 +1,4 @@
-local SparseCriterion, parent = torch.class('nn.SparseCriterion', 'nn.Criterion')
+local SparseCriterion, parent = torch.class('nnsparse.SparseCriterion', 'nn.Criterion')
 
 
 function SparseCriterion:__init(criterion)

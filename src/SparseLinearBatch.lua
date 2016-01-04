@@ -1,6 +1,6 @@
 require("nn")
 
-local SparseLinearBatch, parent = torch.class('nn.SparseLinearBatch', 'nn.Module')
+local SparseLinearBatch, parent = torch.class('nnsparse.SparseLinearBatch', 'nn.Module')
 
 function SparseLinearBatch:__init(inputSize, outputSize, useGradInput)
    parent.__init(self)
@@ -174,7 +174,6 @@ function SparseLinearBatch:zeroGradParameters()
       end
 
    end
-
 end
 
 

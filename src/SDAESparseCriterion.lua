@@ -1,4 +1,4 @@
-local SDAESparseCriterion, parent = torch.class('nn.SDAESparseCriterion', 'nn.Criterion')
+local SDAESparseCriterion, parent = torch.class('nnsparse.SDAESparseCriterion', 'nn.Criterion')
 
 function SDAESparseCriterion:__init(criterion, SDAEconf)
    parent.__init(self)

@@ -3,7 +3,7 @@ function nn.Criterion:prepareInput(input)
 end
 
 
-local SDAECriterion, parent = torch.class('nn.SDAECriterion', 'nn.Criterion')
+local SDAECriterion, parent = torch.class('nnsparse.SDAECriterion', 'nn.Criterion')
 
 function SDAECriterion:__init(criterion, SDAEconf)
    parent.__init(self)
@@ -23,10 +23,6 @@ function SDAECriterion:__init(criterion, SDAEconf)
 
    self.hideRatio = SDAEconf.hideRatio or 0
 
-   
-   self.maskAlpha    = torch.Tensor():byte()
-   self.maskBeta     = torch.Tensor():byte()
-
    self.sizeAverage = true
    
    self.criterion.sizeAverage = false
@@ -37,9 +33,12 @@ function SDAECriterion:prepareInput(input)
 
    self.input = self.input or input.new()
    self.input:resizeAs(input):copy(input)
-   
-   self.maskAlpha:resize(input:size()):byte()
-   self.maskBeta:resize(input:size()):byte()
+
+   self.maskAlpha    = self.maskAlpha or torch.Tensor():byte()
+   self.maskBeta     = self.maskBeta  or torch.Tensor():byte()
+      
+   self.maskAlpha:resize(input:size())
+   self.maskBeta:resize(input:size())
 
 
    local vInput     = self.input:view(-1)
