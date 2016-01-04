@@ -193,9 +193,9 @@ sparseLayer:backward(x,someLoss)
 
 
 ## Criterions ##
-  * [SparseCriterion](#nn.SparseCriterion) : encapsulate nn.Criterion to handle sparse inputs/targets 
-  * [SDAECriterion](#nn.SDAECriterion) : Compute a denoising loss for autoencoders 
-  * [SDAESparseCriterion](#nn.SDAESparseCriterion) : Compute a denoising loss for sparse autoencoders 
+  * [SparseCriterion](#nnsparse.SparseCriterion) : encapsulate nn.Criterion to handle sparse inputs/targets 
+  * [SDAECriterion](#nnsparse.SDAECriterion) : Compute a denoising loss for autoencoders 
+  * [SDAESparseCriterion](#nnsparse.SDAESparseCriterion) : Compute a denoising loss for sparse autoencoders 
 
 Sparse criterion deals with sparse target vectors. This is mainly used with autoencoders with sparse input.
 
@@ -212,7 +212,7 @@ The division by n can be avoided if one sets the internal variable sizeAverage t
 criterion.sizeAverage = false
 ```
 
-<a name="nn.SparseCriterion"></a>
+<a name="nnsparse.SparseCriterion"></a>
 ### nn.SparseCriterion(denseEstimate, sparseTarget) ###
 This layer enables to encapsulate a loss from the nn package. 
 
@@ -223,15 +223,15 @@ sparseTarget = torch.Tensor(10,100):uniform()
 sparseTarget:apply(function(x) if torch.uniform() < 0.6 then return 0 else return x end end)
 sparseTarget = sparseTarget:sparsify()
 
-criterion = nn.SparseCriterion(nn.MSECriterion())
+criterion = nnsparse.SparseCriterion(nn.MSECriterion())
 
 criterion:forward(output, sparseTarget)
 criterion:backward(output, sparseTarget)
 ```
 
 
-<a name="nn.SDAECriterion"></a>
-### nn.SDAECriterion(criterion, SDAEconf) ###
+<a name="nnsparse.SDAECriterion"></a>
+### nnsparse.SDAECriterion(criterion, SDAEconf) ###
 Stacked Denoising Autoencoder criterion is based on Pascal Vincent et al. paper: http://dl.acm.org/citation.cfm?id=1953039. It aims at teaching an autoencoder to denoise data. Tis enable to learn more easily low-dimension features.
 
 There is three ways to corrupt the input:
@@ -246,7 +246,7 @@ The loss is then computed as follow:
  Where alpha, beta are respectively two hyperparameters that either strengthen the denoising aspect or the reconstruction apsect of the loss. 
 
 ```lua
-criterion = nn.SDAECriterion(nn.MSECriterion(), 
+criterion = nnsparse.SDAECriterion(nn.MSECriterion(), 
 {
    alpha = 1
    beta  = 0.5
@@ -274,12 +274,12 @@ dloss = criterion:backward(output, sparseInput)
 When the nnsparse module is loaded. All the nn.criterion gets a `prepareInput` method. It is equivalent to the identity method. Thus, one may switch from a classic criterion to a SDAE criterion wihtout modifying his soure code.
  
 
-<a name="nn.SDAESparseCriterion"></a>
+<a name="nnsparse.SDAESparseCriterion"></a>
 ### nn.SDAESparseCriterion(criterion, SDAEconf) ###
 This method encapsulate the SDAE criterion and apply it to sparse inputs.  
 
 ```lua
-local criterion = nn.SDAESparseCriterion(nn.MSECriterion(), 
+local criterion = nnsparse.SDAESparseCriterion(nn.MSECriterion(), 
 {
       hideRatio = 0.2,
       alpha = 0.8,
