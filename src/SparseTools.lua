@@ -275,7 +275,7 @@ end
 
 
 
-local DynamicSparseTensor = torch.class("nnsparse.DynamicTensor")
+local DynamicSparseTensor = torch.class("nnsparse.DynamicSparseTensor")
 
 function DynamicSparseTensor:__init(reserve, multCoef)
   self.reserve = reserve or 10
