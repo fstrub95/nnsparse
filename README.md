@@ -244,7 +244,7 @@ denseNetwork:add(nnsparse.Densify(10))
 denseNetwork:add(nnsparse.Linear(10, 100))
 denseNetwork:add(nn.Tanh())
 
-batchifier = nn.Batchifier(denseNetwork, 100, 20) 
+batchifier = nnsparse.Batchifier(denseNetwork, 100, 20) 
 output     = batchifier:forward(newtrain, 20)     -- there is no memory explosion! 
 
 ```
