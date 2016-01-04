@@ -3,7 +3,7 @@ local SDAESparseCriterion, parent = torch.class('nnsparse.SDAESparseCriterion', 
 function SDAESparseCriterion:__init(criterion, SDAEconf)
    parent.__init(self)
 
-   self.criterion = nn.SDAECriterion(criterion, SDAEconf)
+   self.criterion = nnsparse.SDAECriterion(criterion, SDAEconf)
    self.criterion.sizeAverage = false
    
    self.sizeAverage = true
