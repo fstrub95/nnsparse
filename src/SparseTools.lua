@@ -138,7 +138,11 @@ function Densify:updateOutput(input)
       local index = oneInput[{{},1}]
       local data  = oneInput[{{},2}]
 
-      self.output[k]:indexCopy(1, index:long(), data)
+      if torch.type(index) ~= "torch.CudaTensor" then
+         index= index:long()
+      end
+
+      self.output[k]:indexCopy(1, index, data)
    end            
 
    return self.output
