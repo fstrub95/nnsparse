@@ -121,7 +121,6 @@ local Densify, parent = torch.class('nnsparse.Densify', 'nn.Module')
 function Densify:__init(inputSize)
    parent.__init(self)   
    self.inputSize = inputSize
-   self.output = nil
 end
 
 function Densify:updateOutput(input)
@@ -132,7 +131,7 @@ function Densify:updateOutput(input)
    local xSize = #input
    local ySize = self.inputSize
 
-   self.output = self.output or input[1].new()
+   self.output = self.output:typeAs(input[1])
    self.output:resize(xSize, ySize):zero()
 
    for k, oneInput in pairs(input) do
