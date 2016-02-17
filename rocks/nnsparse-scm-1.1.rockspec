@@ -3,6 +3,7 @@ version = "scm-1.1"
 
 source = {
    url = "git://github.com/fstrub95/nnsparse.git",
+   tag = "v1.1"
 }
 
 description = {
