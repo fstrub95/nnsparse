@@ -11,4 +11,10 @@ include('SparseCriterion.lua')
 
 include('SparseLinearBatch.lua')
 
+include('SparseSorting.lua')
+include('Batchifier.lua')
+include('DynamicSparseTensor.lua')
+
+
+
 return nnsparse
