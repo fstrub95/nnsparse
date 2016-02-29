@@ -7,6 +7,7 @@ include('SparseTools.lua')
 
 include('SDAECriterion.lua')
 include('SDAESparseCriterion.lua')
+include('MaskCriterion.lua')
 include('SparseCriterion.lua')
 
 include('SparseLinearBatch.lua')
