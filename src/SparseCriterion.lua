@@ -71,8 +71,6 @@ end
 
 function SparseCriterion:__updateGradInput(estimate, target)
    
-
-   
    if torch.isTensor(target) then
       -- create a vector that only contains the "useful targets"
       local index = target[{{},1}]
@@ -89,13 +87,13 @@ function SparseCriterion:__updateGradInput(estimate, target)
       self.dloss:resizeAs(estimate):zero()
       
       -- iterate over each sparse vector and accumulate the dloss
-      local nElem = 0
       for k, t in pairs(target) do
          self.dloss[k] = self:__updateGradInput(estimate[k], t)
-         nElem = nElem + t:size(1)
       end
       
-      return self.dloss, nElem
+      -- it is important to return the total number of elements 
+      -- in the ``estimate`` in order to propagate dloss correctly  
+      return self.dloss, estimate:nElement()
    end
    
 end

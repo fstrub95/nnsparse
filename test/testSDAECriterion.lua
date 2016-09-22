@@ -1,10 +1,17 @@
 require("nn")
 
+local info = debug.getinfo(1,'S')
+local src_path = info.source:gsub("@", ""):gsub("test/(.*)", "src/")
 
+if not nnsparse then
+   nnsparse = {}
+end
 
+if not nnsparse.Densify then
+   dofile(src_path .. "SparseTools.lua")
+end
 
-dofile("SDAECriterion.lua")
-dofile("SparseTools.lua")
+dofile(src_path .. "SDAECriterion.lua")
 
 
 function torch.Tester:assertbw(val, condition, tolerance, message)
@@ -24,7 +31,7 @@ function SDAECriterionTester.prepareHidden()
    local input = torch.ones(10, 1000)
    local hideRatio = 0.5
    
-   local criterion = nn.SDAECriterion(nn.MSECriterion(), 
+   local criterion = nnsparse.SDAECriterion(nn.MSECriterion(), 
    {
       hideRatio = hideRatio
    })
@@ -43,7 +50,7 @@ function SDAECriterionTester.prepareGauss()
    local mean = 5
    local std = 2
    
-   local criterion = nn.SDAECriterion(nn.MSECriterion(), 
+   local criterion = nnsparse.SDAECriterion(nn.MSECriterion(), 
    {
       noiseRatio = noiseRatio,
       noiseMean  = mean,
@@ -73,7 +80,7 @@ function SDAECriterionTester.prepareFlip()
    local input = torch.zeros(10, 1000)
    local flipRatio = 0.8
    
-   local criterion = nn.SDAECriterion(nn.MSECriterion(), 
+   local criterion = nnsparse.SDAECriterion(nn.MSECriterion(), 
    {
       flipRatio = flipRatio,
       flipRange = {-99, 99},
@@ -99,7 +106,7 @@ function SDAECriterionTester.prepareMixture()
    local flipRatio  = 0.3
    local noiseRatio = 0.4
    
-   local criterion = nn.SDAECriterion(nn.MSECriterion(), 
+   local criterion = nnsparse.SDAECriterion(nn.MSECriterion(), 
    {
       hideRatio = hideRatio,
       noiseRatio = noiseRatio,
@@ -141,7 +148,7 @@ function SDAECriterionTester.NoNoiseSingleSample()
    local beta = 0.5
    
    local basicCriterion = nn.MSECriterion()
-   local sdaeCriterion = nn.SDAECriterion(nn.MSECriterion(), 
+   local sdaeCriterion = nnsparse.SDAECriterion(nn.MSECriterion(), 
    {
       alpha = 1,
       beta =  beta,
@@ -174,7 +181,7 @@ function SDAECriterionTester.NoNoise()
    local beta = 0.5
    
    local basicCriterion = nn.MSECriterion()
-   local sdaeCriterion = nn.SDAECriterion(nn.MSECriterion(), 
+   local sdaeCriterion = nnsparse.SDAECriterion(nn.MSECriterion(), 
    {
       alpha = 1,
       beta =  beta,
@@ -208,7 +215,7 @@ function SDAECriterionTester.NoNoiseSizeAverage()
    local basicCriterion = nn.MSECriterion()
    basicCriterion.sizeAverage = false
    
-   local sdaeCriterion = nn.SDAECriterion(nn.MSECriterion(), 
+   local sdaeCriterion = nnsparse.SDAECriterion(nn.MSECriterion(), 
    {
       alpha = 1,
       beta =  beta,
@@ -245,7 +252,7 @@ function SDAECriterionTester.WithNoise()
    local alpha = 0.8
    local beta  = 0.3
    
-  local criterion = nn.SDAECriterion(nn.MSECriterion(), 
+  local criterion = nnsparse.SDAECriterion(nn.MSECriterion(), 
   {
       hideRatio = 0.3,
       alpha = alpha,

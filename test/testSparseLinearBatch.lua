@@ -1,9 +1,17 @@
 require("nn")
 
+local info = debug.getinfo(1,'S')
+local src_path = info.source:gsub("@", ""):gsub("test/(.*)", "src/")
 
-dofile("SparseLinearBatch.lua")
-dofile("SparseTools.lua")
+if not nnsparse then
+   nnsparse = {}
+end
 
+if not nnsparse.Densify then
+   dofile(src_path .. "SparseTools.lua")
+end
+
+dofile(src_path .. "SparseLinearBatch.lua")
 
 local tester = torch.Tester()
 
@@ -21,7 +29,7 @@ function sparseLinearBatch.oneSample()
    local inputSize, outputSize = input:size(1), dloss:size(1)
 
    local denseLayer  = nn.Linear(inputSize, outputSize)
-   local sparseLayer = nn.SparseLinearBatch(inputSize, outputSize)
+   local sparseLayer = nnsparse.SparseLinearBatch(inputSize, outputSize)
 
    -- provide the same weights
    denseLayer.bias   = sparseLayer.bias:clone()
@@ -56,7 +64,7 @@ function sparseLinearBatch.miniBatch()
    local inputSize, outputSize = input:size(2), dloss:size(2)
 
    local denseLayer  = nn.Linear(inputSize, outputSize)
-   local sparseLayer = nn.SparseLinearBatch(inputSize, outputSize)
+   local sparseLayer = nnsparse.SparseLinearBatch(inputSize, outputSize)
 
    -- provide the same weights
    denseLayer.bias   = sparseLayer.bias:clone()
@@ -73,11 +81,11 @@ function sparseLinearBatch.miniBatch()
  
  
    --backward
-   denseLayer:backward (input      , dloss)
+   denseLayer:backward (input,       dloss)
    sparseLayer:backward(sparseInput, dloss)
-   
-   tester:assertTensorEq(denseLayer.gradWeight, sparseLayer.gradWeight, 1e-6, 'Fail to compute sparseLinearBatch:backward for a minibatch : gradWeight')
+
    tester:assertTensorEq(denseLayer.gradBias  , sparseLayer.gradBias  , 1e-6, 'Fail to compute sparseLinearBatch:backward for a minibatch : bias')
+   tester:assertTensorEq(denseLayer.gradWeight, sparseLayer.gradWeight, 1e-6, 'Fail to compute sparseLinearBatch:backward for a minibatch : gradWeight')
    
 end
 
