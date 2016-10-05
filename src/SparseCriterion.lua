@@ -23,7 +23,7 @@ function SparseCriterion:updateOutput(estimate, target)
       if self.sizeAverage == true then
          loss = loss/nElem
       elseif self.fullSizeAverage == true then
-         loss = estimate:nElement()
+         loss = loss/estimate:nElement()
       end
      
      return loss

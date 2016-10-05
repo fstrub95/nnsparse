@@ -121,6 +121,38 @@ function sparseCriterionTester.miniBatchWithNoSizeAverage()
 end
 
 
+function sparseCriterionTester.miniBatchWithiFullSizeAverage()
+
+   local input  = torch.Tensor(10,100):uniform():apply(sparsifier)
+   local output = torch.Tensor(10,100):uniform()
+
+   local sparseInput = input:sparsify()
+
+   -- compute the objective with dense vector
+   local maskDense  = input:ne(0)
+   local maskSparse = input:eq(0)
+
+
+   local mseFct       = nn.MSECriterion()
+   local sparseMseFct = nnsparse.SparseCriterion(nn.MSECriterion())
+
+
+   mseFct.sizeAverage = false 
+   sparseMseFct.sizeAverage = false
+   sparseMseFct.fullSizeAverage = true
+
+   local expectedLoss  = mseFct      :forward(output[maskDense] , input[maskDense])/output:nElement()
+   local obtainedLoss  = sparseMseFct:forward(output, sparseInput)
+
+
+   tester:assertalmosteq(expectedLoss , obtainedLoss, 1e-6, 'Fail to compute autoencoder sparse loss given a mini-batch with full average')
+
+   --autoencoder loss
+   local expectedDLoss = mseFct      :backward(output[maskDense] , input[maskDense]):div(output:nElement())
+   local obtainedDLoss = sparseMseFct:backward(output, sparseInput)
+
+   tester:assertalmosteq(expectedDLoss:sum(), obtainedDLoss:sum(), 1e-6, 'Fail to compute autoencoder sparse Dloss given a mini-batch with full average')
+end
 
 
 print('')
