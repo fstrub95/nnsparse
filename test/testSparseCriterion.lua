@@ -73,12 +73,15 @@ function sparseCriterionTester.miniBatch()
       
    tester:assertalmosteq(expectedLoss , obtainedLoss, 1e-6, 'Fail to compute autoencoder sparse loss given a mini-batch')
    
+   local expectedDLoss = mseFct      :backward(output[maskDense], input[maskDense]) --autoencoder loss
+   local obtainedDLoss = sparseMseFct:backward(output           , sparseInput) 
    
+   tester:assertalmosteq(expectedDLoss:sum(), obtainedDLoss:sum(), 1e-6, 'Fail to compute autoencoder sparse Dloss given a mini-batch')
    --autoencoder loss
-   local expectedDLoss = mseFct      :backward(output, input)
-   local obtainedDLoss = sparseMseFct:backward(output, sparseInput)
+   --local expectedDLoss = mseFct      :backward(output[maskDense], input[maskDense])
+   --local obtainedDLoss = sparseMseFct:backward(output, sparseInput)
 
-   tester:assertTensorEq(expectedDLoss, obtainedDLoss, 1e-6, 'Fail to compute autoencoder sparse Dloss given a mini-batch')
+   --tester:assertTensorEq(expectedDLoss, obtainedDLoss, 1e-6, 'Fail to compute autoencoder sparse Dloss given a mini-batch')
    
 end
 
