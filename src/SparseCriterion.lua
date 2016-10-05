@@ -104,6 +104,7 @@ function SparseCriterion:__updateGradInput(estimate, target)
       -- iterate over each sparse vector and accumulate the dloss
       for k, t in pairs(target) do
          self.dloss[k] = self:__updateGradInput(estimate[k], t)
+         nElem = nElem + t:size(1)
       end
       
       return self.dloss, nElem
