@@ -65,7 +65,7 @@ end
 function SparseCriterion:updateGradInput(estimate, target)
       
       if self.sizeAverage == true and self.fullSizeAverage == true then
-         error( "You need to either normalize the batch by the size of non-zero elements (sizeAverage = True) or by the total number of elements (fullSizeAverage = True)"))
+         error( "You need to either normalize the batch by the size of non-zero elements (sizeAverage = True) or by the total number of elements (fullSizeAverage = True)")
       end
       
       local nElem = 0
