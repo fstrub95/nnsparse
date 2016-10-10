@@ -7,20 +7,28 @@ function SparseCriterion:__init(criterion)
    self.criterion = criterion
    self.criterion.sizeAverage = false
    self.sizeAverage = true
+   self.fullSizeAverage = false
 end
 
 
 function SparseCriterion:updateOutput(estimate, target)
+
+      if self.sizeAverage == true and self.fullSizeAverage == true then
+        error( "You need to either normalize the batch by the size of non-zero elements (sizeAverage = True) or by the total number of elements (fullSizeAverage = True)")
+      end
 
       --compute recursively the loss
       local loss, nElem = self:__updateOutput(estimate, target)
     
       if self.sizeAverage == true then
          loss = loss/nElem
+      elseif self.fullSizeAverage == true then
+         loss = loss/estimate:nElement()
       end
      
      return loss
 end
+
 
 --the target is sparse
 function SparseCriterion:__updateOutput(estimate, target)
@@ -56,6 +64,10 @@ end
 
 function SparseCriterion:updateGradInput(estimate, target)
       
+      if self.sizeAverage == true and self.fullSizeAverage == true then
+         error( "You need to either normalize the batch by the size of non-zero elements (sizeAverage = True) or by the total number of elements (fullSizeAverage = True)")
+      end
+      
       local nElem = 0
       
       --compute recursively dloss
@@ -63,6 +75,8 @@ function SparseCriterion:updateGradInput(estimate, target)
        
       if self.sizeAverage == true then
          self.dloss:div(nElem)
+      elseif self.fullSizeAverage == true then
+         self.dloss:div(estimate:nElement())
       end
      
      return self.dloss
@@ -70,8 +84,6 @@ end
 
 
 function SparseCriterion:__updateGradInput(estimate, target)
-   
-
    
    if torch.isTensor(target) then
       -- create a vector that only contains the "useful targets"
@@ -88,8 +100,8 @@ function SparseCriterion:__updateGradInput(estimate, target)
       self.dloss = self.dloss or estimate[1].new()
       self.dloss:resizeAs(estimate):zero()
       
-      -- iterate over each sparse vector and accumulate the dloss
       local nElem = 0
+      -- iterate over each sparse vector and accumulate the dloss
       for k, t in pairs(target) do
          self.dloss[k] = self:__updateGradInput(estimate[k], t)
          nElem = nElem + t:size(1)

@@ -4,8 +4,16 @@ require("torch")
 require("nn")
 require("sys")
 
+local info = debug.getinfo(1,'S')
+local src_path = info.source:gsub("@", ""):gsub("test/(.*)", "src/")
 
-dofile("SparseTools.lua")
+if not nnsparse then
+   nnsparse = {}
+end
+
+dofile(src_path .. "SparseTools.lua")
+dofile(src_path .. "SparseSorting.lua")
+dofile(src_path .. "DynamicSparseTensor.lua")
 
 local tester = torch.Tester()
 
@@ -119,7 +127,7 @@ function toolsTester.dynamicSparseTensor()
 
    --build a dynamic sparse vector
    sys.tic()
-   local dynTensor = DynamicSparseTensor.new()
+   local dynTensor = nnsparse.DynamicSparseTensor.new()
    for i = 1, input:size(1) do
       dynTensor:append(input[i])
    end 

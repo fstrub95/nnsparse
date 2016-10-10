@@ -256,18 +256,25 @@ output     = batchifier:forward(newtrain, 20)     -- there is no memory explosio
 
 Sparse criterion deals with sparse target vectors. This is mainly used with autoencoders with sparse input.
 
-WARNING, sparse loss are averaged over the number of KWNOWN Values. 
+WARNING, sparse loss are averaged over the number of NON-ZERO Values. 
 Example, if the output values has 20 elements and the sparse target vector has 5 eleemnts. The final averaged loss will be divided by 5.
 ```
 sparseCriterion(x, t)  = 1/t:size(1) \sum Criterion(x, t)
 ```
 
-If t is a sparse matrix with a total of n elements, the sum operation still operates over all the elements, and divides by n.
+If t is a sparse matrix with a total of non-zero elements, the sum operation still operates over all the elements, and divides by n.
 
 The division by n can be avoided if one sets the internal variable sizeAverage to false:
 ```
 criterion.sizeAverage = false
 ```
+
+If you to average by the number of non-zero AND zero elements, you can use the folling variable:
+```
+criterion.sizeAverage = false -- you need to remove non-zero average operation first
+criterion.fullSizeAverage = true
+```
+
 
 <a name="nnsparse.SparseCriterion"></a>
 ### nnsparse.SparseCriterion(denseEstimate, sparseTarget) ###
